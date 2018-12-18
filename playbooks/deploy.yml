@@ -1,0 +1,13 @@
+---
+- name: install base components for all hosts
+  hosts: k8s-cluster
+  any_errors_fatal: true
+  roles:
+    - { role: bootstrap-os }
+    - { role: docker }
+    - { role: kubernetes/base }
+
+- hosts: kube-masters
+  any_errors_fatal: true
+  roles:
+    - { role: kubernetes/master, tags: master }

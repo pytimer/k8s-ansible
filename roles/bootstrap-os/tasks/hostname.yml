@@ -1,0 +1,21 @@
+- name: Change hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Change /etc/hosts
+  template:
+    src: hosts.j2
+    dest: /tmp/hosts.hikcloud
+
+- name: Get hosts dns
+  command: "cat /tmp/hosts.hikcloud"
+  register: cloud_hosts_dns
+
+- name: Remove hosts DNS in /etc/hosts
+  command: "sed -i '/{{ ansible_managed_prefix }}.*\ start/,/{{ ansible_managed_prefix }}.*\ end/d' /etc/hosts"
+
+- name: Append hosts DNS in /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    insertafter: EOF
+    line: "{{ cloud_hosts_dns.stdout }}"

@@ -1,0 +1,2 @@
+docker_rh_repo_base_url: "https://download.docker.com/linux/centos/7/$basearch/stable"
+docker_rh_repo_gpgkey: "https://download.docker.com/linux/centos/gpg"

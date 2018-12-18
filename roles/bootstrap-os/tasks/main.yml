@@ -1,0 +1,22 @@
+---
+- name: Create ssh id_rsa public key
+  run_once: true
+  delegate_to: 127.0.0.1
+  connection: local
+  command: >-
+    ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+  args:
+    creates: "~/.ssh/id_rsa"
+
+- name: Push ssh public key
+  authorized_key: user={{ ansible_ssh_user }} key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  tags:
+    - sshkey
+
+- import_tasks: hostname.yml
+
+- import_tasks: selinux.yml
+
+- import_tasks: swap.yml
+
+- import_tasks: ipforward.yml

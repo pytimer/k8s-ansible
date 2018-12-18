@@ -1,0 +1,5 @@
+---
+- name: kubeadm | remove pki directory
+  file:
+    path: "{{ kube_certs_path }}"
+    state: absent

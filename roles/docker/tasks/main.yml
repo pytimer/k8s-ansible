@@ -1,0 +1,49 @@
+---
+- name: install required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "yum-utils"
+    - "device-mapper-persistent-data"
+    - "lvm2"
+  environment: 
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"
+
+- name: setup the stable repository
+#   template:
+#     src: docker.repo.j2
+#     dest: "/etc/yum.repos.d/docker-ce.repo"
+  command: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
+  environment: 
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"
+
+- name: install docker-ce
+  yum:
+    name: "docker-ce-18.06.0.ce-3.el7"
+    state: present
+  environment: 
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"  
+
+- name: enable docker service
+  systemd:
+    name: docker
+    enabled: yes
+    daemon_reload: yes
+    state: started
+
+- name: create service systemd directory if it doesn't exists
+  file:
+    path: "/etc/systemd/system/docker.service.d"
+    state: directory
+
+- name: Write docker proxy drop-in
+  template:
+    src: http-proxy.conf.j2
+    dest: /etc/systemd/system/docker.service.d/http-proxy.conf
+  notify: restart docker
+
+- meta: flush_handlers

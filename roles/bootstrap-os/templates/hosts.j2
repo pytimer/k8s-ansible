@@ -1,0 +1,6 @@
+# {{ ansible_managed }} start
+
+{{ keepalived_vip }} {{ k8s_vip_dns }}
+127.0.0.1 {{ inventory_hostname }}
+
+# {{ ansible_managed }} end

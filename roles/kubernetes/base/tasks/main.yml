@@ -1,0 +1,31 @@
+---
+- name: add kubernetes repo to yum repos
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    exclude: "kube*"
+    gpgkey: "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
+    enabled: yes
+    gpgcheck: yes
+    repo_gpgcheck: yes
+
+- name: install kube components
+  command: "yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes"
+#   yum:
+#     name: "{{ item }}"
+#     state: present
+#     # disable_excludes: "kubernetes"
+#   with_items:
+#     - "kubelet"
+#     - "kubeadm"
+#     - "kubectl"
+  environment: 
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"  
+
+- name: enable kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes
+    daemon_reload: yes

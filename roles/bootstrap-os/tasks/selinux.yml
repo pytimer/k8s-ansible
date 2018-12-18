@@ -1,0 +1,24 @@
+- name: Check SELINUX disabled
+  command: getenforce
+  register: selinux_code
+
+- name: Disable SELINUX temporary
+  command: setenforce 0
+  when: selinux_code.stdout != "Disabled"
+
+- name: Put SELinux in disabled mode
+  selinux:
+    state: disabled
+
+- name: Ensure firewalld service exists
+  stat:
+    path: "/usr/sbin/firewalld"
+  register: fd_service_exists
+
+- name: Stop firewalld
+  systemd: name=firewalld state=stopped
+  when: fd_service_exists.stat.exists == true
+
+- name: Disabled firewalld
+  systemd: name=firewalld enabled=no
+  when: fd_service_exists.stat.exists == true

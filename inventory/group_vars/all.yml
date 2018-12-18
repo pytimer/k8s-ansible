@@ -1,0 +1,49 @@
+# HTTP proxy
+http_proxy: "http://1.2.3.4:1080"
+
+# Keepalived
+keepalived_vip: "192.168.46.10"
+keepalived_interface: "eth0"
+keepalived_auth_pass: "123456"
+keepalived_virtual_router_id: 23
+
+# Kubernetes
+kubernetes_version: "v1.13.0"
+cluster_name: "cloud"
+kubernetes_path: "/etc/kubernetes"
+kube_certs_path: "{{ kubernetes_path }}/pki"
+kube_manifests_path: "{{ kubernetes_path }}/manifests"
+k8s_vip_dns: "kubernetes.cluster.{{ cluster_name }}.lb"
+kube_net_pod_subnet: "10.244.0.0/16"
+kube_service_subnet: "10.96.0.0/12"
+
+# Kubelet
+kubelet_manifests_path: "{{ kube_manifests_path }}"
+kubelet_max_pods: 100
+
+# Kube-apiserver
+kube_apiserver_secure_port: 6443
+
+# Kube-proxy
+kube_proxy_mode: "iptables"
+kube_proxy_port_range: "30000-32767"
+
+# Etcd
+etcd_cert_path: "{{ kube_certs_path }}/etcd"
+etcd_port: 2379
+etcd_image_version: "3.2.24"
+
+# Kube CNI Plugin
+cni_type: "flannel"
+
+# Flannel
+flannel_backend_type: "host-gw"
+
+# Kubectl
+kubectl_config_path: "~/.kube"
+
+# Kubernetes CA
+kube_ca_dir: "{{ root_path }}/pki-ca"
+
+# Ansible managed prefix
+ansible_managed_prefix: "This file is managed by kansible"
