@@ -1,0 +1,10 @@
+work_dir: "/etc/keepalived"
+sysconfig_path: "/etc/sysconfig"
+
+keepalived_auth_pass: "qwert123456"
+keepalived_virtual_router_id: 235
+keepalived_interface: "{{ ansible_default_ipv4.interface }}"
+
+keepalived_pkg_version: "1.3.5"
+
+keepalived_priority_max: 120

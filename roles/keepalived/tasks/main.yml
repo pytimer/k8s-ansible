@@ -1,0 +1,45 @@
+---
+- name: ipvs
+  command: modprobe ip_vs
+
+- name: make work dir
+  file: path={{ work_dir }} mode=0750 state=directory recurse=yes
+
+- name: install keepalived
+  yum:
+    name: "keepalived-{{ keepalived_pkg_version }}"
+    state: present
+  notify:
+    - restart keepalived
+  environment: 
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"
+
+- name: set keepalived roles
+  set_fact:
+    keepalived_role: "{% if inventory_hostname in groups['kube-masters'][0] %}MASTER{% else %}BACKUP{% endif %}"
+
+- name: set keepalived priority
+  set_fact:
+    keepalived_priority: "{% if inventory_hostname in groups['kube-masters'][0] %}{{ keepalived_priority_max }}{% else %}{{ keepalived_priority_max - (groups['kube-masters'].index(inventory_hostname)|int + 1) }}{% endif %}"
+
+- name: config keepalived config file
+  template: src=keepalived.conf dest={{ work_dir }}/keepalived.conf  mode=0644
+  notify:
+    - restart keepalived
+
+- name: config keepalived sysconfig
+  template: src=keepalived dest={{ sysconfig_path }}/keepalived mode=0744
+  notify:
+    - restart keepalived
+
+- name: config keepalived | check script
+  template: src=check.sh dest={{ work_dir }}/check.sh mode=0770
+  notify:
+    - restart keepalived
+
+- command: /bin/true
+  notify:
+    - start keepalived
+
+- meta: flush_handlers

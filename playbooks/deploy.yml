@@ -10,4 +10,5 @@
 - hosts: kube-masters
   any_errors_fatal: true
   roles:
+    - { role: keepalived, tags: keepalived }
     - { role: kubernetes/master, tags: master }
