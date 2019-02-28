@@ -29,6 +29,25 @@ This repository now only support `CentOS 7.4`, so you install ansible with yum.
 
 ## Installation
 
+### Configures Ansible
+
+```ini
+roles_path    = /root/kansible/roles
+
+# uncomment this to disable SSH key host checking
+#host_key_checking = False
+host_key_checking = False
+
+# change the default callback, you can only have one 'stdout' type  enabled at a time.
+#stdout_callback = skippy
+stdout_callback = debug
+
+callback_whitelist = profile_tasks
+
+ansible_managed = This file is managed by kansible. date: %Y-%m-%d %H:%M:%S
+
+```
+
 ### Set ansible hosts information.
 
 Add your hosts into `inventory/hosts.ini`, format like:
