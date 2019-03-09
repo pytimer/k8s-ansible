@@ -46,4 +46,4 @@ kubectl_config_path: "~/.kube"
 kube_ca_dir: "{{ root_path }}/pki-ca"
 
 # Ansible managed prefix
-ansible_managed_prefix: "This file is managed by kansible"
+ansible_managed_prefix: "This file is managed by k8s-ansible"

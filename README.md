@@ -1,5 +1,4 @@
-Kansible
-----------------------------------
+# k8s-ansible
 
 This repository setup the Kubernetes cluster with kubeadm via ansible.
 
@@ -32,7 +31,7 @@ This repository now only support `CentOS 7.4`, so you install ansible with yum.
 ### Configures Ansible
 
 ```ini
-roles_path    = /root/kansible/roles
+roles_path    = /root/k8s-ansible/roles
 
 # uncomment this to disable SSH key host checking
 #host_key_checking = False
@@ -44,11 +43,11 @@ stdout_callback = debug
 
 callback_whitelist = profile_tasks
 
-ansible_managed = This file is managed by kansible. date: %Y-%m-%d %H:%M:%S
+ansible_managed = This file is managed by k8s-ansible. date: %Y-%m-%d %H:%M:%S
 
 ```
 
-### Set ansible hosts information.
+### Set ansible hosts information
 
 Add your hosts into `inventory/hosts.ini`, format like:
 
@@ -57,9 +56,9 @@ Add your hosts into `inventory/hosts.ini`, format like:
 You can choose which hosts to use as the master role, and which hosts to use as the node role.
 
 > `kube-masters` install components, include: `kube-apiserver`, `kube-scheduler`, `kube-controller-manager`, `etcd`
-
+>
 > `kube-nodes` install components, include: `kubelet`.
-
+>
 > all hosts install `docker`, `kube-proxy`, `kube-flannel`.
 
 ### Set ansible variables
