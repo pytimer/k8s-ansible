@@ -1,5 +1,25 @@
 ---
-- name: kubeadm | remove pki directory
+- name: kubeadm | Check if kubeadm has already run
+  stat:
+    path: "{{ kube_manifests_path }}/kube-apiserver.yaml"
+  register: kubeadm_already_run
+
+- name: kubeadm | Remove old kubernetes certs
   file:
     path: "{{ kube_certs_path }}"
     state: absent
+  when: not kubeadm_already_run.stat.exists
+
+- name: Mkdir kube pki directory
+  file:
+    path: "{{ kube_certs_path }}"
+    state: directory
+    mode: 0755
+
+- name: Mkdir kubeadm directory
+  file:
+    path: "{{ kubernetes_path }}/kubeadm"
+    state: directory
+    mode: 0755
+  
+- name:

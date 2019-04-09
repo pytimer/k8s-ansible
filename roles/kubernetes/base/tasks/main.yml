@@ -1,4 +1,17 @@
 ---
+- name: Install socat and ipvsadm
+  yum:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items:
+    - {"name": "libselinux-python", "state":"present"}
+    - {"name": "socat", "state": "present"}
+    - {"name": "curl", "state": "present"}
+    - {"name": "ipvsadm", "state": "present"}
+  environment:
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"
+
 - name: add kubernetes repo to yum repos
   yum_repository:
     name: kubernetes
@@ -12,14 +25,6 @@
 
 - name: install kube components
   command: "yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes"
-#   yum:
-#     name: "{{ item }}"
-#     state: present
-#     # disable_excludes: "kubernetes"
-#   with_items:
-#     - "kubelet"
-#     - "kubeadm"
-#     - "kubectl"
   environment: 
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ http_proxy }}"  

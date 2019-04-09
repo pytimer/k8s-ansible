@@ -1,4 +1,9 @@
 ---
+- name: ensure docker packages are installed
+  stat:
+    path: "/usr/bin/docker"
+  register: docker_installed
+
 - name: install required packages
   yum:
     name: "{{ item }}"
@@ -10,15 +15,14 @@
   environment: 
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ http_proxy }}"
+  when: not docker_installed.stat.exists
 
 - name: setup the stable repository
-#   template:
-#     src: docker.repo.j2
-#     dest: "/etc/yum.repos.d/docker-ce.repo"
   command: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
   environment: 
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ http_proxy }}"
+  when: not docker_installed.stat.exists
 
 - name: install docker-ce
   yum:
@@ -26,7 +30,8 @@
     state: present
   environment: 
     http_proxy: "{{ http_proxy }}"
-    https_proxy: "{{ http_proxy }}"  
+    https_proxy: "{{ http_proxy }}"
+  when: not docker_installed.stat.exists
 
 - name: enable docker service
   systemd:
@@ -34,6 +39,15 @@
     enabled: yes
     daemon_reload: yes
     state: started
+
+- name: set fact for docker_version
+  command: "docker version --format '{{ '{{' }}.Client.Version{{ '}}' }}'"
+  register: docker_version
+
+- name: check minimum docker version
+  fail:
+    msg: "You need at least docker version >= 17.06.2"
+  when: docker_version.stdout is version('17.06.2', '<')
 
 - name: create service systemd directory if it doesn't exists
   file:
@@ -44,6 +58,8 @@
   template:
     src: http-proxy.conf.j2
     dest: /etc/systemd/system/docker.service.d/http-proxy.conf
-  notify: restart docker
+  notify:
+    - reload docker
+    - restart docker
 
 - meta: flush_handlers

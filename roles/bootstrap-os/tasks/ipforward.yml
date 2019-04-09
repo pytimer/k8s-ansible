@@ -19,12 +19,22 @@
     - net.bridge.bridge-nf-call-iptables
     - net.bridge.bridge-nf-call-arptables
     - net.bridge.bridge-nf-call-ip6tables
+    - fs.may_detach_mounts
   ignore_errors: yes
 
 - name: Enable ipv4 forward
   sysctl:
     name: net.ipv4.ip_forward
     value: 1
+    sysctl_file: "{{sysctl_file_path}}"
+    sysctl_set: yes
+    reload: yes
+    state: present
+
+- name: Set max_user_watches
+  sysctl:
+    name: fs.inotify.max_user_watches
+    value: 100000
     sysctl_file: "{{sysctl_file_path}}"
     sysctl_set: yes
     reload: yes
