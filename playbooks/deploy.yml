@@ -25,3 +25,9 @@
   any_errors_fatal: true
   roles:
     - { role: kubernetes/node, tags: node }
+
+- hosts: kube-masters[0]
+  gather_facts: true
+  any_errors_fatal: true
+  roles:
+    - { role: cni/flannel, tags: flannel, when: cni_type == "flannel" }

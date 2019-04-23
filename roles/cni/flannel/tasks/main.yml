@@ -1,0 +1,21 @@
+---
+- name: flannel | download flannel yaml from internet
+  get_url:
+    url: "https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml"
+    dest: "{{ kubernetes_path }}/kube-flannel.yml"
+  environment:
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"
+
+- name: flannel | apply flannel yaml
+  command: "kubectl apply -f {{ kubernetes_path }}/kube-flannel.yml"
+
+- name: flannel | ensure flannel installed
+  command: "kubectl get ds --namespace=kube-system kube-flannel-ds-amd64 --no-headers"
+  delegate_to: "{{ groups['kube-masters']|first }}"
+  register: kube_ds_result
+  until: "kube_ds_result.stdout.count('kube-flannel-ds') == item.count"
+  retries: 30
+  delay: 10
+  with_items:
+    - {"name":"app", "value":"flannel", "count": 1}
