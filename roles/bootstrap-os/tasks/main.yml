@@ -20,3 +20,14 @@
 - import_tasks: swap.yml
 
 - import_tasks: ipforward.yml
+
+- name: install required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "ebtables"
+    - "ethtool"
+  environment:
+    http_proxy: "{{ http_proxy }}"
+    https_proxy: "{{ http_proxy }}"

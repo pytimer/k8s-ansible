@@ -11,4 +11,17 @@
   any_errors_fatal: true
   roles:
     - { role: keepalived, tags: keepalived }
+
+- hosts: kube-masters
+  gather_facts: true
+  any_errors_fatal: true
+  serial: 1
+  roles:
     - { role: kubernetes/master, tags: master }
+    - { role: kubernetes/client, tags: client }
+
+- hosts: kube-nodes
+  gather_facts: true
+  any_errors_fatal: true
+  roles:
+    - { role: kubernetes/node, tags: node }

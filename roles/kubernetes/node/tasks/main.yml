@@ -1,0 +1,51 @@
+---
+- name: remove kube path
+  command: "rm -rf {{ kubernetes_path }}"
+
+- name: mkdir kube path
+  file:
+    path: "{{ kube_certs_path }}"
+    state: directory
+    mode: 0755
+
+- name: mkdir kubelet manifests directory
+  file:
+    path: "{{ kubelet_manifests_path }}"
+    state: directory
+    mode: 0755
+
+- name: Node | ensure kubelet stop
+  systemd: name=kubelet state=stopped enabled=yes daemon_reload=yes
+
+- name: Node | calculate kubeadm CA cert hash
+  shell:  openssl x509 -pubkey -in {{ kube_certs_path }}/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+  register: kubeadm_ca_hash
+  delegate_to: "{{ groups['kube-masters']|first }}"
+  run_once: true
+
+- name: Node | Create kubeadm token for joining nodes with 24h expiration (default)
+  command: "/usr/bin/kubeadm token create"
+  register: temp_token
+  when: kubeadm_token is not defined
+  delegate_to: "{{ groups['kube-masters']|first }}"
+
+- name: Node | Set kubeadm_token to generated token
+  set_fact:
+    kubeadm_token: "{{ temp_token.stdout }}"
+  when: kubeadm_token is not defined
+
+- debug:
+    msg: "kubeadm token create command: \n{{ kubeadm_token }}"
+
+- name: Node | Create kubeadm client config
+  template:
+    src: kubeadm-client-v1beta1.yaml.j2
+    dest: "{{ kubernetes_path }}/kubeadm-client.yaml"
+    mode: 0744
+
+- name: Node | kubeadm join node
+  command: "kubeadm join --config={{ kubernetes_path }}/kubeadm-client.yaml"
+  register: kubeadm_join_node_result
+
+- debug:
+    msg: "kubeadm join node output: \n{{ kubeadm_join_node_result.stdout }}"

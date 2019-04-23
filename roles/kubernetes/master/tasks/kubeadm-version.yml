@@ -1,0 +1,14 @@
+---
+- name: get the kubeadm version
+  command: "/usr/bin/kubeadm version -o short"
+  register: kubeadm_version_output
+
+- name: sets kubeadm api version to v1alpha2
+  set_fact:
+    kubeadm_api_version: v1beta1
+  when: kubeadm_version_output.stdout is version('v1.14.0', '>=')
+
+- name: Write kubeadm config to file
+  template:
+    src: "kubeadm-config-{{ kubeadm_api_version }}.yaml.j2"
+    dest: "{{ kubernetes_path }}/kubeadm/kubeadm-config.yaml"

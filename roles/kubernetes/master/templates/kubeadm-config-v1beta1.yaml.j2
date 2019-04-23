@@ -1,4 +1,6 @@
 apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
-kubernetesVersion: stable
 controlPlaneEndpoint: "{{ k8s_vip_dns }}:{{ kube_apiserver_secure_port }}"
+networking:
+  podSubnet: "{{ kube_net_pod_subnet }}"
+  serviceSubnet: "{{ kube_service_subnet }}"

@@ -21,5 +21,69 @@
     path: "{{ kubernetes_path }}/kubeadm"
     state: directory
     mode: 0755
-  
-- name:
+
+- import_tasks: kubeadm-version.yml
+  when: not kubeadm_already_run.stat.exists
+
+- name: kubeadm | pull k8s control plane images from external registry
+  command: "kubeadm config images pull --config=kubeadm-config.yaml"
+  args:
+    chdir: "{{ kubernetes_path }}/kubeadm"
+
+- name: ensure stop kubelet
+  systemd: name=kubelet state=stopped enabled=yes daemon_reload=yes
+  when: not kubeadm_already_run.stat.exists
+
+- name: kubeadm | Initialize first master
+  command: "timeout -k 600s 600s kubeadm init --config=kubeadm-config.yaml --experimental-upload-certs"
+  register: kubeadm_init_result
+  args:
+    chdir: "{{ kubernetes_path }}/kubeadm"
+  when: inventory_hostname == groups['kube-masters']|first and not kubeadm_already_run.stat.exists
+  failed_when: kubeadm_init_result.rc != 0
+
+- name: kubeadm | wait for control plane components on first master
+  uri:
+    url: "{{ item }}"
+    method: "GET"
+    validate_certs: no
+    status_code: 200
+  register: kube_status_code
+  until: kube_status_code.status == 200
+  retries: 30
+  delay: 10
+  with_items:
+    - "https://{{ k8s_vip_dns }}:{{ kube_apiserver_secure_port }}/healthz"
+    - "http://localhost:10251/healthz"
+    - "http://localhost:10252/healthz"
+  when: inventory_hostname == groups['kube-masters']|first
+
+#- name: control-plane | create token for joining control plane node with 24h expiration (default)
+#  command: "/usr/bin/kubeadm token create"
+#  register: temp_token
+#  delegate_to: "{{ groups['kube-masters']|first }}"
+#  when: inventory_hostname != groups['kube-masters']|first and not kubeadm_already_run.stat.exists
+#
+#- name: control-plane | joining control-plane node to cluster
+#  command: "/usr/bin/kubeadm join {{ k8s_vip_dns }}:{{ kube_apiserver_secure_port }} --token {{ temp_token.stdout }} --experimental-control-plane"
+#  when: inventory_hostname != groups['kube-masters']|first and not kubeadm_already_run.stat.exists
+
+- name: kubeadm | waiting this master pod running
+  command: "kubectl --kubeconfig {{ kubernetes_path }}/admin.conf get pods -n kube-system -l {{ item.name }}={{ item.value }} {% if item.value != 'kube-dns' %}--field-selector='spec.nodeName={{ inventory_hostname }}'{% endif %} --no-headers"
+  register: kube_pod_result
+  until: "kube_pod_result.stdout.count('Running') >= item.count"
+  retries: 30
+  delay: 10
+  with_items:
+    - {"name":"component", "value":"kube-apiserver", "count": 1}
+    - {"name":"component", "value":"kube-controller-manager", "count": 1}
+    - {"name":"component", "value":"kube-scheduler", "count": 1}
+    - {"name":"component", "value":"etcd", "count": 1}
+    - {"name":"k8s-app", "value":"kube-proxy", "count": 1}
+  delegate_to: "{{ groups['kube-masters']|first }}"
+
+- name: kubeadm | Remove taint for master with node role
+  command: "kubectl --kubeconfig {{ kubernetes_path }}/admin.conf taint node {{ inventory_hostname }} node-role.kubernetes.io/master:NoSchedule-"
+  delegate_to: "{{groups['kube-masters']|first}}"
+  when: inventory_hostname in groups['kube-nodes']
+  failed_when: false

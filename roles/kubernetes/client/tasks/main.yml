@@ -1,0 +1,14 @@
+---
+- name: create kube config dir
+  file:
+    path: "{{ kubectl_config_path }}"
+    mode: "0700"
+    state: directory
+
+- name: copy admin kubeconfig to kube config dir
+  copy:
+    src: "{{ kubernetes_path }}/admin.conf"
+    dest: "{{ kubectl_config_path }}/config"
+    remote_src: yes
+    mode: "0600"
+    backup: yes
