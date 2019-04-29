@@ -1,8 +1,0 @@
-[docker-ce-stable]
-name=Docker CE Stable - $basearch
-baseurl={{ docker_rh_repo_base_url }}
-enabled=1
-gpgcheck=1
-keepcache={{ docker_rpm_keepcache | default('1') }}
-gpgkey={{ docker_rh_repo_gpgkey }}
-{% if http_proxy is defined and http_proxy != "" %}proxy={{ http_proxy }}{% endif %}

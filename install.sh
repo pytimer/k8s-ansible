@@ -9,6 +9,8 @@ declare -r REPO_ROOT
 cd "${REPO_ROOT}"
 
 # install ansible with yum
+yum update -y
+yum install -y epel-release
 yum install -y ansible
 
 # setting ansible configurations

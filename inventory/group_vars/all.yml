@@ -9,7 +9,7 @@ keepalived_virtual_router_id: 23
 
 # Kubernetes
 kubernetes_version: "v1.13.0"
-#cluster_name: "cloud"
+cluster_name: "cloud"
 kubernetes_path: "/etc/kubernetes"
 kube_certs_path: "{{ kubernetes_path }}/pki"
 kube_manifests_path: "{{ kubernetes_path }}/manifests"
@@ -47,3 +47,8 @@ kube_ca_dir: "{{ root_path }}/pki-ca"
 
 # Ansible managed prefix
 ansible_managed_prefix: "This file is managed by k8s-ansible"
+
+# DNS
+custome_dns_nameservers:
+  - "10.1.7.77"
+  - "10.1.7.88"

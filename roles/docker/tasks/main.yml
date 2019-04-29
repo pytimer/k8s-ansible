@@ -26,8 +26,12 @@
 
 - name: install docker-ce
   yum:
-    name: "docker-ce-18.06.0.ce-3.el7"
+    name: "{{ item }}"
     state: present
+  with_items:
+    - "docker-ce"
+    - "docker-ce-cli"
+    - "containerd.io"
   environment: 
     http_proxy: "{{ http_proxy }}"
     https_proxy: "{{ http_proxy }}"
